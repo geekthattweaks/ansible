@@ -1,0 +1,30 @@
+---
+#playbook launches instance(s) into ec2 vpc.  use -vvvv flag for troubleshooting if playbook fails
+- 
+  gather_facts: false
+  hosts: localhost
+  name: "Spin up ec2 instance"
+  connection: local
+  tasks: 
+    - 
+      ec2: 
+        assign_public_ip: true
+        group: "{{ security_group }}"
+        instance_tags:
+            Name:  #tag goes here
+        #exact_count: needed if deploying more than one instance
+        image: "{{ image }}"
+        instance_type: "{{ instance_type }}"
+        key_name: "{{ keypair }}"
+        region: "{{ region }}"
+        vpc_subnet_id: #vpc subnet id goes here
+        wait: true
+      name: "Launch instance"
+      register: ec2
+  vars: 
+    image: ami-d05e75b8
+    instance_type: t2.micro #instance type; defaulted to t2.micro
+    key_name: #key pair goes here
+    region: us-east-1 #region; default set to us-east-1 (N. Virginia).  
+    #Regions listed @ http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region
+    security_group: #security groups go here

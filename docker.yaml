@@ -1,0 +1,48 @@
+---
+
+- hosts: all
+  tasks:
+  - name: add docker gpg key
+    command: apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
+
+  - name: add docker repo
+    command: echo "deb https://apt.dockerproject.org/repo ubuntu-trusty main" > /etc/apt/sources.list.d/docker.list
+
+  - name: Run the equivalent of "apt-get update"
+    apt: update_cache=yes
+
+  - name: Update all packages to the latest version
+    apt: upgrade=dist
+
+  - name: install packages
+    apt: name={{item}} state=present
+    with_items:
+    - wget
+    - linux-image-extra-$(uname -r)
+    - docker-engine
+
+  - name: backup dns conf
+    command: cp /etc/resolv.conf /etc/resolv.conf.bak
+
+  - name: set dns to google servers
+    command: printf "nameserver 8.8.8.8\nnameserver 8.8.4.4" > /etc/resolv.conf
+
+  - name: start docker if stopped
+    service: name=docker pattern=/usr/bin/docker state=started
+
+  - name: login to DockerHub remote registry using your account
+    docker_login:
+      username: USERNAME
+      password: PASSWORD
+      email: EMAIL
+
+  - name: docker pull
+    docker:
+      image: IMAGE-NAME
+      pull: always
+      state: present
+      username: USERNAME
+      password: PASSWORD
+
+...
+
